@@ -1,0 +1,3 @@
+agentscope==1.0.5
+agentscope-runtime[agentscope]==0.1.4
+python-dotenv>=1.0.0

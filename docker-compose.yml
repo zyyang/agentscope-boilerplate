@@ -1,0 +1,67 @@
+services:
+  # AgentScope Studio - 监控界面
+  maxfad-studio:
+    build:
+      context: .
+      dockerfile: deployments/Dockerfile.studio
+
+    image: maxfad/studio:${BUILD_VERSION}
+    container_name: maxfad-studio
+    ports:
+      - "${STUDIO_HOST_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - STUDIO_HOST=0.0.0.0
+      - STUDIO_PORT=3000
+    volumes:
+      - ./volumes/studio:/home/studio/AgentScope-Studio
+    networks:
+      - agentscope-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Agent 服务
+  maxfad-agent:
+    build:
+      context: .
+      dockerfile: deployments/Dockerfile
+
+    image: maxfad/agent:${BUILD_VERSION}
+    container_name: maxfad-agent
+    ports:
+      - "${AGENT_HOST_PORT:-8080}:8080"
+    environment:
+      # 所有敏感配置都从 .env 文件读取
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
+      - MODEL_NAME=${MODEL_NAME}
+      - SERVER_PORT=8080
+      - SERVER_HOST=0.0.0.0
+      - SERVER_ENDPOINT=${AGENT_ENDPOINT:-process}
+      - STUDIO_URL=http://maxfad-studio:3000
+      - PROJECT_NAME=${PROJECT_NAME}
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - ./volumes/agent/app-logs:/app/logs
+    networks:
+      - agentscope-network
+    depends_on:
+      maxfad-studio:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+
+
+networks:
+  agentscope-network:
+    driver: bridge

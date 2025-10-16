@@ -1,0 +1,12 @@
+{
+  "qwen-max": {
+    "model_type": "dashscope_chat",
+    "config_name": "qwen-max",
+    "model_name": "qwen-max",
+    "api_key": "${DASHSCOPE_API_KEY}",
+    "generate_args": {
+      "temperature": 0.7,
+      "top_p": 0.8
+    }
+  }
+}
