@@ -9,6 +9,7 @@ docker-compose.override.yml
 # Logs
 logs/
 *.log
+volumes/
 
 # IDE
 .vscode/
